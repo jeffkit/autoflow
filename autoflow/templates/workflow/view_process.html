@@ -1,0 +1,219 @@
+{%extends 'central/base_site.html'%}
+{% load  i18n %}
+{%block extrastyle%}
+	{{block.super}}
+	<link rel="stylesheet" type="text/css" href="/media/css/forms.css" />
+	{{form.media}}
+{%endblock%}
+{%block extrahead%}
+	<script type="text/javascript">
+		var attachment_index = 1;
+		$(document).ready(function(){
+			$("#attach").click(function(){
+				if($("#attachment").attr("style") == "display:none"){
+					$("#attachment").show();	
+				}else{
+				$("#attachment").append('<p><label for="id_form-' + attachment_index + '-attachment_file">上传附件:</label> <input type="file" name="form-' + attachment_index + '-attachment_file" id="id_form-' + attachment_index + '-attachment_file" /></p>');					
+					attachment_index++;
+					$("#form_total").val(attachment_index);
+				}	
+			});		
+		});
+	</script>
+
+{%endblock%}
+{%block breadcrumbs%}
+<div class="breadcrumbs">
+      <a href="../../../">
+      {% trans "Home" %}
+    </a>
+     &rsaquo; 
+     <a href="../">
+       我的工单
+    </a>
+    &rsaquo; 
+    工单详情
+  </div>
+{%endblock%}
+
+{% block content_title %}
+	<h1>{{process.title}}</h1>
+{%endblock%}
+
+{%block object-tools%}
+<ul class="object-tools object_tools">
+	<li><a href="#history"><span>查看历史</span></a></li>
+	{%if attachments%}
+ 	<li><a href="#attachment"><span>下载附件</span></a></li>
+ 	{%endif%}
+	{%if handler%}
+ 	<li><a href="#solve"><span>处理流程</span></a></li>
+	{%endif%}
+</ul>
+{%endblock%}
+
+{%block content%}
+
+<div class="content_main">
+
+	{%block process_info%}
+<div class="form_div">
+	<a name="info"></a>
+	<h2>流程信息</h2>
+	<table class="form_table">
+		<tr>
+			<th width="15%">发起时间：</th>
+			<td width="35%">{{process.start}}</td>
+			<th width="15%">发起人：</th>
+			<td width="35%">{{process.requester.username}}</td>
+		</tr>
+		<tr>
+			<th width="15%">状态：</th>
+			<td width="35%">{{process.state.name}}&nbsp;{%if process.state.icon%}{{process.state.picture|safe}}{%endif%}</td>
+			<th width="15%">当前处理人/组：</th>
+			<td width="35%">
+			{%if last_step.assign_to_user %}
+				{{last_step.assign_to_user.username}}
+			{%endif%}
+			
+			{%if last_step.assign_to_group %}
+				{{last_step.assign_to_group.name}}
+			{%endif%}
+			</td>
+		</tr>
+		<tr>
+			<th width="15%">说明：</th>
+			<td width="35%" colspan="3">
+			{%if process.description%}
+			{{process.description}}
+			{%endif%}
+			</td>
+		</tr>
+	</table>
+</div>
+{%endblock%}
+
+{%block form_info%}
+
+{%if form and handler%}
+	 <form method="POST" action="" enctype="multipart/form-data" >
+{%endif%}
+
+{%if form %}
+<div class="form_div">
+	<a name="form"></a>
+	<h2>表单信息</h2>
+  {%if handler%}
+	 	{%include 'workflow/form_fields.html'%}
+	 
+  {%else%}
+  	{%include 'workflow/form_fields_view.html'%}
+  {%endif%}
+</div>
+{%endif%}
+{%endblock%}
+
+{%block process_history%}
+<div class="form_div">
+	<a name="history"></a>
+	<h2>流程历史</h2>
+	<table class="list_table">
+		<thead>
+			<tr>
+				<th width="15%">处理人</th>
+				<th width="25%">操作</th>
+				<th width="40%">备注</th>
+				<th width="20%">时间</th>
+			</tr>	
+		</thead>
+		<tbody>
+			{%for step in history%}
+			<tr>
+				<td>{{step.user}}</td>
+				<td>{{step.transition.name}}</td>
+				<td>{%if step.comment%}{{step.comment}}{%endif%}</td>
+				<td>{{step.enter_time}}</td>
+			</tr>		
+			{%endfor%}
+		</tbody>
+	</table>
+</div>
+{%endblock%}
+
+{%block process_attachment%}
+{%if attachments%}
+<div class="form_div">
+<a name="attachment"></a>
+
+<h2>附件</h2>
+<table class="list_table">
+	<thead>
+		<tr>
+			<th width="15%">上传人</th>
+			<th width="25%">附件</th>
+			<th width="40%">备注</th>
+			<th width="20%">上传时间</th>
+		</tr>
+    </thead>
+    <tbody>
+    {%for attachment in attachments%}
+		<tr>
+			<td>{{attachment.creator.username}}</td>
+			<td><a href="{{attachment.attachment_file.url}}" class="ico_fetch">{{attachment.filename}}</a></td>
+			<td>{{attachment.comment|default_if_none:""}}</td>
+			<td>{{attachment.created}}</td>
+		</tr>
+	{%endfor%}
+	</tbody>
+</table>
+</div>
+
+{%endif%}
+{%endblock%}
+
+{%block process_handler%}
+{%if handler %}
+<div class="form_div">
+	<a name="solve"></a>
+	<h2>处理流程</h2>
+	<table class="form_table">
+		<tr>
+			<th width="15%">备注</th>
+			<td>
+				<textarea name="__comment__"></textarea>	
+				<br/>
+			</td>
+		</tr>
+		<tr>
+			<th>附件</th>
+			<td >
+				<a href="#solve" id="attach">添加附件</a>
+				<input type="hidden" id="form_total" name="form-TOTAL_FORMS" value="1"/>
+				<input type="hidden" name="form-INITIAL_FORMS" value="1"/>
+				
+				<div id="attachment" style="display:none">
+				{%for form in attachment_formset.forms%}
+				{{form.as_p}}
+				{%endfor%}	
+				</div>
+			</td>
+		</tr>
+	</table>
+</div>
+{%endif%}
+{%endblock%}
+
+{%block submit_row%}
+{%if handler%}
+	{%if handler and transitions%}
+		  <div class="submit-row" > 
+		  {%for transition in transitions%}
+		  <input type="submit" name="__transition__" value="{{transition.name}}" />
+		  {%endfor%}
+		</div> 
+	{%endif%}
+</form>
+{%endif%}
+{%endblock%}
+</div>
+{%endblock%}

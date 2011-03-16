@@ -1,0 +1,23 @@
+{% extends "admin/change_list.html" %}
+{% load adminmedia admin_list i18n %}
+{%block title%}
+我的工单
+{%endblock%}
+{% block breadcrumbs %}
+  <div class="breadcrumbs">
+      <a href="../../">
+      {% trans "Home" %}
+    </a>
+     &rsaquo; 
+     <a href="../">
+       数据提取
+    </a>
+    &rsaquo; 
+    我的工单
+  </div>
+{% endblock %}
+
+{% block content_title %}<h1>我的工单</h1>{% endblock %}
+
+{%block object-tools%}
+{%endblock%}

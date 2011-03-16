@@ -1,0 +1,21 @@
+<table class="form_table">
+  {%for field in form%}
+	<tr>
+		<th width="15%"> <label for="id_{{field.name}}"{%if field.field.required %}class="required"{%endif%}>{{field.label}}</label></th>
+		<td width="85%">
+		{%if field.errors%}
+			<ul class="errorlist">
+			  {%for error in field.errors%}
+			  <li>{{error}}</li>
+			  {%endfor%}
+			</ul>
+		{%endif%}
+
+		{{ field }}
+		 {% if field.help_text %}
+	        <span class="help">{{ field.help_text|safe }}</span>
+	     {% endif %}
+		</td>
+	</tr>
+	{%endfor%}
+</table>
